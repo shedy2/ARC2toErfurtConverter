@@ -3,6 +3,7 @@
 class A2E_ConverterTest{
 
     public static function test($queries){
+
         if(!is_array($queries) or !count($queries))
             throw new Exception('Param must be an array');
 
