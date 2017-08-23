@@ -8,6 +8,7 @@ class A2E_Converter
     function __construct(){
         $this->parser = ARC2::getSPARQLParser();
         $this->targetModel = new Erfurt_Sparql_Query2();
+        $this->extendedPatterns = array('minus'=>'Core_Query2_Minus');
     }
 
     public function addExtendedPatttern($patternName,$className){
