@@ -2,15 +2,15 @@
 
 class A2E_ConverterTest{
 
-    public static function test($queries){
+    public static function test($converter,$queries){
         if(!is_array($queries) or !count($queries))
             throw new Exception('Param must be an array');
 
         $i = 0;
         foreach($queries as $query){
-            //echo 'Запрос '.++$i.'. ';
+            echo 'Запрос '.++$i.'. ';
             try {
-                echo 'Тест ' . (self::testQuery($query) ? 'пройден' : 'не пройден') . '<br>';
+                echo 'Тест ' . (self::testQuery($converter,$query) ? 'пройден' : 'не пройден') . '<br>';
             }
             catch (Exception $e) {
                 echo $e->getMessage(). '<br>';
@@ -18,9 +18,8 @@ class A2E_ConverterTest{
         }
     }
 
-    static function testQuery($query){
+    static function testQuery($converter,$query){
 
-        $converter = new A2E_Converter();
         try {
             $erfurtParserResultStr = (string)Erfurt_Sparql_Query2::initFromString($query);
         }
