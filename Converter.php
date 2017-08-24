@@ -5,7 +5,7 @@ class A2E_Converter
     private $targetModel;
     private $mf;
 
-    function __construct($factory_config){
+    function __construct($factory_config=array()){
         $this->mf = new A2E_Models_Factory();
         $this->parser = ARC2::getSPARQLParser();
         $this->targetModel = $this->mf->ef($factory_config);
