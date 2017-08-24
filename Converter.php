@@ -3,20 +3,10 @@ class A2E_Converter
 {
     private $parser;
     private $targetModel;
-    private $extendedPatterns = array();
 
     function __construct(){
         $this->parser = ARC2::getSPARQLParser();
         $this->targetModel = new Erfurt_Sparql_Query2();
-        $this->extendedPatterns = array('minus'=>'Core_Query2_Minus');
-    }
-
-    public function addExtendedPatttern($patternName,$className){
-        $this->extendedPatterns[$patternName] = $className;
-    }
-
-    public function getExtendedPattern($name){
-        return isset($this->extendedPatterns[$name]) ? $this->extendedPatterns[$name] : false;
     }
 
     public function convert($query){
@@ -26,6 +16,10 @@ class A2E_Converter
         $this->convertResultVars();
         $this->convertWhere();
         return $this->targetModel;
+    }
+
+    public function getParser(){
+        return $this->parser;
     }
 
     function parse($query){
@@ -109,31 +103,39 @@ class A2E_Converter
                     $optional = new Erfurt_Sparql_Query2_OptionalGraphPattern($sub_ggp);
                     $ggp->addElement($optional);
                     break;
+
+                case 'minus':
+                    $sub_ggp = new Erfurt_Sparql_Query2_GroupGraphPattern();
+                    $this->resolvePatterns($sub_ggp, $subPattern['patterns']);
+                    $optional = new Core_Query2_Minus($sub_ggp);
+                    $ggp->addElement($optional);
+                    break;
                     
                 case 'filter':
-                    $envloppedExpression = $this->getFilterConstraint($subPattern['constraint']);
+                    $envloppedExpression = $this->getConstraint($subPattern['constraint']);
                     $filter = new Erfurt_Sparql_Query2_Filter(new Erfurt_Sparql_Query2_BrackettedExpression($envloppedExpression));
                     $ggp->addElement($filter);
                     break;
 
+                case 'bind':
+                    $bind = new Core_Query2_Bind($this->getConstraint($subPattern['constraint']),new Erfurt_Sparql_Query2_Var($subPattern['var']));
+                    $ggp->addElement($bind);
+                    break;
+
                 default:
-                    if($extendClass = $this->getExtendedPattern($subPattern['type'])){
-                        $sub_ggp = new Erfurt_Sparql_Query2_GroupGraphPattern();
-                        $this->resolvePatterns($sub_ggp, $subPattern['patterns']);
-                        $optional = new $extendClass($sub_ggp);
-                        $ggp->addElement($optional);
-                        break;
-                    }
                     throw new Exception("Unknown pattern");
             }
         }
     }
 
-    function getTriplePart($value,$type){
+    function getConvertedVar($value,$type){
         
         switch($type) {
             case 'var':
                 return new Erfurt_Sparql_Query2_Var($value);
+                break;
+            case 'literal':
+                return new Erfurt_Sparql_Query2_RDFLiteral($value);
                 break;
             case 'uri':
                 return new Erfurt_Sparql_Query2_IriRef($value);
@@ -143,25 +145,39 @@ class A2E_Converter
         }
     }
 
-    function getSameTermArg($arg){
+    function getConvertedArguments($arguments){
+        $converted = array();
+        foreach($arguments as $argument) {
+            $converted[] = $this->getConvertedArgument($argument);
+        }
+        return $converted;
+    }
+
+    function getConvertedArgument($arg){
 
         switch($arg["type"]) {
             case 'var':
                 $value = $arg['value'];
                 break;
+            case 'literal':
+                $value = $arg['value'];
+                break;
             case 'uri':
                 $value = $arg['uri'];
+                break;
+            case 'built_in_call':
+                return $this->getConstraint($arg);
                 break;
             default:
                 throw new Exception("Unknown same term arg type");
         }
-        return $this->getTriplePart($value,$arg["type"]);
+        return $this->getConvertedVar($value,$arg["type"]);
     }
 
     function getTriple($triple){
-        $subject = $this->getTriplePart($triple['s'],$triple['s_type']);
-        $verb = $this->getTriplePart($triple['p'],$triple['p_type']);
-        $object = $this->getTriplePart($triple['o'],$triple['o_type']);
+        $subject = $this->getConvertedVar($triple['s'],$triple['s_type']);
+        $verb = $this->getConvertedVar($triple['p'],$triple['p_type']);
+        $object = $this->getConvertedVar($triple['o'],$triple['o_type']);
         $objList = new Erfurt_Sparql_Query2_ObjectList(array($object));
         $properties = new Erfurt_Sparql_Query2_PropertyList(array(array('verb'=>$verb,'objList'=>$objList)));
         return new Erfurt_Sparql_Query2_TriplesSameSubject($subject,$properties);
@@ -179,28 +195,27 @@ class A2E_Converter
         $element1 = new Erfurt_Sparql_Query2_ConditionalOrExpression(
             array(
                 new Erfurt_Sparql_Query2_ConditionalAndExpression(
-                    array($this->getEnveloppedFilterElement($this->getSameTermArg($arg1)))
+                    array($this->getEnveloppedFilterElement($this->getConvertedArgument($arg1)))
                 )
             )
         );
         $element2 = new Erfurt_Sparql_Query2_ConditionalOrExpression(
             array(
                 new Erfurt_Sparql_Query2_ConditionalAndExpression(
-                    array($this->getEnveloppedFilterElement($this->getSameTermArg($arg2)))
+                    array($this->getEnveloppedFilterElement($this->getConvertedArgument($arg2)))
                 )
             )
         );
         return new Erfurt_Sparql_Query2_sameTerm($element1,$element2);
     }
 
-    function getFilterConstraint($constraint)
+    function getConstraint($constraint)
     {
-
         switch ($constraint['type']) {
             case 'expression':
                 $patterns = array();
                 foreach ($constraint['patterns'] as $pattern) {
-                    $patterns[] = $this->getFilterConstraint($pattern);
+                    $patterns[] = $this->getConstraint($pattern);
                 }
                 return $this->getEnvloppedOrAndExpression($constraint['sub_type'], $patterns);
             case 'built_in_call':
@@ -208,6 +223,8 @@ class A2E_Converter
                     case 'sameterm':
                         $sametermExpression = $this->getSameTermExpression($constraint['args'][0], $constraint['args'][1]);
                         return new Erfurt_Sparql_Query2_ConditionalOrExpression(array(new Erfurt_Sparql_Query2_ConditionalAndExpression(array($this->getEnveloppedFilterElement($sametermExpression)))));
+                    case 'concat':
+                        return new Core_Query2_Concat($this->getConvertedArguments($constraint['args']));
                     default:
                         throw new Exception("Unknown filter call type");
                 }
