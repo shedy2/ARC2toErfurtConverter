@@ -6,9 +6,9 @@ class A2E_Converter
     private $mf;
 
     function __construct($factory_config=array()){
-        $this->mf = new A2E_Models_Factory();
+        $this->mf = new A2E_Models_Factory($factory_config);
         $this->parser = ARC2::getSPARQLParser();
-        $this->targetModel = $this->mf->ef($factory_config);
+        $this->targetModel = $this->mf->ef();
     }
 
     public function convert($query){
