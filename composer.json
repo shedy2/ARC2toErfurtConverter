@@ -1,5 +1,5 @@
 {
-    "name": "almatyartem/converter",
+    "name": "a2e/converter",
     "type": "library",
     "description": "ARC2 parsers output to Erfurn Converter for PHP",
     "keywords": ["rdf","sparql"],
