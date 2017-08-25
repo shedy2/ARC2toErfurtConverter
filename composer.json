@@ -1,7 +1,7 @@
 {
     "name": "a2e/converter",
     "type": "library",
-    "description": "ARC2 parsers output to Erfurn Converter for PHP",
+    "description": "Converter ARC2 parsers output to Erfurn format",
     "keywords": ["rdf","sparql"],
     "homepage": "https://github.com/almatyartem/ARC2toErfurtConverter",
     "license": "W3C",
