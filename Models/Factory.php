@@ -21,6 +21,7 @@ class A2E_Models_Factory
         'ef_groupgraph' => 'Erfurt_Sparql_Query2_GroupGraphPattern',
         'ef_optional' => 'Erfurt_Sparql_Query2_OptionalGraphPattern',
         'ef_prefix' => 'Erfurt_Sparql_Query2_Prefix',
+        'ef_lang' => 'Erfurt_Sparql_Query2_Lang',
         'ef' => 'Erfurt_Sparql_Query2'
     );
 
