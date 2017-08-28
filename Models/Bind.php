@@ -1,5 +1,5 @@
 <?php
-class A2E_Models_Bind extends Erfurt_Sparql_Query2_ElementHelper implements Erfurt_Sparql_Query2_BuiltInCall
+class A2E_Models_Bind extends Erfurt_Sparql_Query2_GroupGraphPattern
 {
     protected $element;
     protected $var;
