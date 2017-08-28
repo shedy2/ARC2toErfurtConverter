@@ -27,7 +27,6 @@
         "phpunit/phpunit": "^5.0"
     },
     "autoload": {
-        "classmap": ["./","Models/"],
-        "files": ["vendor/aksw/erfurt/library/antlr/Php/util.php"]
+        "classmap": ["./","Models/"]
     }
 }
