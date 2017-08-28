@@ -246,6 +246,18 @@ class A2E_Converter
     }
 
     /**
+     * @param array $arguments
+     * @return array
+     */
+    function getConvertedArguments($arguments){
+        $converted = array();
+        foreach($arguments as $argument) {
+            $converted[] = $this->getConvertedArgument($argument);
+        }
+        return $converted;
+    }
+
+    /**
      * get triple converted to Erfurt format
      * @param array $triple
      * @return Erfurt_Sparql_Query2_TriplesSameSubject
@@ -291,19 +303,14 @@ class A2E_Converter
                 switch ($constraint['call']) {
                     //sameTerm function
                     case 'sameterm':
-                        $element1 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][0]))))));
-                        $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][1]))))));
-                        $sametermExpression = $this->mf->ef_sameterm($element1,$element2);
+                        $sametermExpression = $this->getSameTermExpression($constraint['args'][0], $constraint['args'][1]);
                         return $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($sametermExpression)))));
                      //CONCAT function
                     case 'concat':
-                        $converted = array();
-                        foreach($this->getConvertedArguments($constraint['args']) as $argument) {
-                            $converted[] = $this->getConvertedArgument($argument);
-                        }
-                        return $this->mf->ef_concat($converted);
+                        return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
                     case 'lang':
                         return $this->mf->ef_lang($this->getConvertedArguments($constraint['args'])[0]);
+
                     default:
                         throw new Exception("Unknown filter call type");
                 }
