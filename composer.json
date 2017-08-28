@@ -10,6 +10,12 @@
             "name": "Artem Golodov"
         }
     ],
+    "repositories": [
+        {
+            "url": "https://github.com/shedy2/Erfurt.git",
+            "type": "vcs"
+        }
+    ],
     "require": {
         "php": ">=5.3.0",
         "a2e/arc2" : "dev-master",
