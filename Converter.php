@@ -302,6 +302,8 @@ class A2E_Converter
                             $converted[] = $this->getConvertedArgument($argument);
                         }
                         return $this->mf->ef_concat($converted);
+                    case 'lang':
+                        return $this->mf->ef_lang($this->getConvertedArguments($constraint['args'])[0]);
                     default:
                         throw new Exception("Unknown filter call type");
                 }
