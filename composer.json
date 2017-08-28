@@ -10,6 +10,8 @@
             "name": "Artem Golodov"
         }
     ],
+    "minimum-stability": "dev",
+    "prefer-stable" : true,
     "repositories": [
         {
             "url": "https://github.com/almatyartem/arc2.git",
@@ -25,6 +27,7 @@
         "phpunit/phpunit": "^5.0"
     },
     "autoload": {
-        "classmap": ["./","Models/"]
+        "classmap": ["./","Models/"],
+        "files": ["vendor/aksw/erfurt/library/antlr/Php/util.php"]
     }
 }
