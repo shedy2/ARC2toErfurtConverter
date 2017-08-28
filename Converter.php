@@ -303,14 +303,15 @@ class A2E_Converter
                 switch ($constraint['call']) {
                     //sameTerm function
                     case 'sameterm':
-                        $sametermExpression = $this->getSameTermExpression($constraint['args'][0], $constraint['args'][1]);
+                        $element1 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][0]))))));
+                        $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][1]))))));
+                        $sametermExpression = $this->mf->ef_sameterm($element1,$element2);
                         return $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($sametermExpression)))));
-                     //CONCAT function
+                    //CONCAT function
                     case 'concat':
                         return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
                     case 'lang':
                         return $this->mf->ef_lang($this->getConvertedArguments($constraint['args'])[0]);
-
                     default:
                         throw new Exception("Unknown filter call type");
                 }
