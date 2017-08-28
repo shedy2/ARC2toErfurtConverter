@@ -1,16 +1,44 @@
 <?php
 class A2E_Converter
 {
+    /**
+     * @var ARC2_SPARQLParser obj
+     */
     private $parser;
+
+    /**
+     * @var Erfurt_Sparql_Query2 obj
+     */
     private $targetModel;
+
+    /**
+     * $var A2E_Models_Factory obj
+     */
     private $mf;
 
+    /**
+     * A2E_Converter constructor.
+     *
+     * Format example
+     * <code>
+     * $array = array(
+     *   'ef' => 'Erfurt_Sparql_Query2', // model=>class
+     * );
+     * </code>
+     * @param array[string]string $factory_config
+     */
     function __construct($factory_config=array()){
         $this->mf = new A2E_Models_Factory($factory_config);
         $this->parser = ARC2::getSPARQLParser();
         $this->targetModel = $this->mf->ef();
     }
 
+    /**
+     * Convert sparqle query to Erfurt object
+     *
+     * @param string $query
+     * @return Erfurt_Sparql_Query2
+     */
     public function convert($query){
         $this->parse($query);
         $this->convertPrefixes();
@@ -20,10 +48,19 @@ class A2E_Converter
         return $this->targetModel;
     }
 
+    /**
+     * @return ARC2_SPARQLParser
+     */
     public function getParser(){
         return $this->parser;
     }
 
+    /**
+     * Parse sparqle query
+     *
+     * @param string $query
+     * @throws Exception
+     */
     function parse($query){
         $this->parser->parse($query);
 
@@ -32,6 +69,10 @@ class A2E_Converter
         }
     }
 
+    /**
+     * set Erfurt_Sparql_Query2 model's query type (SELECT, etc)
+     * @throws Exception
+     */
     function convertQueryType(){
 
         if(!isset($this->parser->r['query']['type']))
@@ -48,6 +89,9 @@ class A2E_Converter
         }
     }
 
+    /**
+     * set Erfurt_Sparql_Query2 model's FROM blocks
+     */
     function convertFroms(){
 
         if(isset($this->parser->r['query']['dataset'])) {
@@ -57,6 +101,10 @@ class A2E_Converter
         }
     }
 
+    /**
+     * set Erfurt_Sparql_Query2 model's vars
+     * @throws Exception
+     */
     function convertResultVars(){
 
         foreach($this->parser->r['query']['result_vars'] as $result_var){
@@ -70,6 +118,10 @@ class A2E_Converter
         }
     }
 
+    /**
+     * set Erfurt_Sparql_Query2 model's prefixes
+     * @throws Exception
+     */
     function convertPrefixes(){
 
         if(isset($this->parser->r['prefixes'])) {
@@ -79,6 +131,9 @@ class A2E_Converter
         }
     }
 
+    /**
+     * set Erfurt_Sparql_Query2 model's WHERE blocks
+     */
     function convertWhere(){
 
         if(isset($this->parser->r['query']['pattern']['patterns']) and count($this->parser->r['query']['pattern']['patterns'])) {
@@ -88,6 +143,13 @@ class A2E_Converter
         }
     }
 
+    /**
+     * Recursively handle patterns in WHERE clauses
+     *
+     * @param Erfurt_Sparql_Query2_GroupGraphPattern $ggp
+     * @param array $patterns
+     * @throws Exception
+     */
     function resolvePatterns(&$ggp,$patterns){
         
         foreach($patterns as $subPattern){
@@ -130,6 +192,13 @@ class A2E_Converter
         }
     }
 
+    /**
+     * Convert var to Erfurt format
+     *
+     * @param string $value
+     * @param string $type
+     * @throws Exception
+     */
     function getConvertedVar($value,$type){
         
         switch($type) {
@@ -147,14 +216,14 @@ class A2E_Converter
         }
     }
 
-    function getConvertedArguments($arguments){
-        $converted = array();
-        foreach($arguments as $argument) {
-            $converted[] = $this->getConvertedArgument($argument);
-        }
-        return $converted;
-    }
-
+    /**
+     * Convert argument to Erfurt format
+     *
+     * @param string $value
+     * @param string $type
+     * @return mixed
+     * @throws Exception
+     */
     function getConvertedArgument($arg){
 
         switch($arg["type"]) {
@@ -176,6 +245,11 @@ class A2E_Converter
         return $this->getConvertedVar($value,$arg["type"]);
     }
 
+    /**
+     * get triple converted to Erfurt format
+     * @param array $triple
+     * @return Erfurt_Sparql_Query2_TriplesSameSubject
+     */
     function getTriple($triple){
         $subject = $this->getConvertedVar($triple['s'],$triple['s_type']);
         $verb = $this->getConvertedVar($triple['p'],$triple['p_type']);
@@ -185,6 +259,11 @@ class A2E_Converter
         return $this->mf->ef_triple($subject,$properties);
     }
 
+    /**
+     * get filter expression envlopped in effurt format
+     * @param mixed $element
+     * @return Erfurt_Sparql_Query2_Expression
+     */
     function getEnveloppedFilterElement($element){
         $multiplicativeExpression = $this->mf->ef_multiplicative();
         $multiplicativeExpression->addElement('*',$element);
@@ -193,12 +272,12 @@ class A2E_Converter
         return $additiveExpression;
     }
 
-    function getSameTermExpression($arg1,$arg2){
-        $element1 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($arg1))))));
-        $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($arg2))))));
-        return $this->mf->ef_sameterm($element1,$element2);
-    }
-
+    /**
+     * Recursively handle patterns in FILTER or BIND expression
+     * @param $constraint
+     * @return mixed
+     * @throws Exception
+     */
     function getConstraint($constraint)
     {
         switch ($constraint['type']) {
@@ -210,11 +289,19 @@ class A2E_Converter
                 return $this->getEnvloppedOrAndExpression($constraint['sub_type'], $patterns);
             case 'built_in_call':
                 switch ($constraint['call']) {
+                    //sameTerm function
                     case 'sameterm':
-                        $sametermExpression = $this->getSameTermExpression($constraint['args'][0], $constraint['args'][1]);
+                        $element1 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][0]))))));
+                        $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][1]))))));
+                        $sametermExpression = $this->mf->ef_sameterm($element1,$element2);
                         return $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($sametermExpression)))));
+                     //CONCAT function
                     case 'concat':
-                        return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
+                        $converted = array();
+                        foreach($this->getConvertedArguments($constraint['args']) as $argument) {
+                            $converted[] = $this->getConvertedArgument($argument);
+                        }
+                        return $this->mf->ef_concat($converted);
                     default:
                         throw new Exception("Unknown filter call type");
                 }
@@ -225,6 +312,13 @@ class A2E_Converter
         }
     }
 
+    /**
+     * get filter AND/OR expression envlopped in effurt format
+     * @param string $type
+     * @param array $patterns
+     * @return mixed
+     * @throws Exception
+     */
     function getEnvloppedOrAndExpression($type,$patterns){
         switch ($type) {
             case 'or':
