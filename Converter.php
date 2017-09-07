@@ -199,14 +199,13 @@ class A2E_Converter
      * @param string $type
      * @throws Exception
      */
-    function getConvertedVar($value,$type){
-        
+    function getConvertedVar($value, $type, $lang = false) {
         switch($type) {
             case 'var':
                 return $this->mf->ef_var($value);
                 break;
             case 'literal':
-                return $this->mf->ef_literal($value);
+                return $this->mf->ef_literal($value, $lang);
                 break;
             case 'uri':
                 return $this->mf->ef_iri($value);
@@ -265,7 +264,7 @@ class A2E_Converter
     function getTriple($triple){
         $subject = $this->getConvertedVar($triple['s'],$triple['s_type']);
         $verb = $this->getConvertedVar($triple['p'],$triple['p_type']);
-        $object = $this->getConvertedVar($triple['o'],$triple['o_type']);
+        $object = $this->getConvertedVar($triple['o'],$triple['o_type'],isset($triple['o_lang']) ? $triple['o_lang'] : false);
         $objList = $this->mf->ef_objectlist(array($object));
         $properties = $this->mf->ef_propertylist(array(array('verb'=>$verb,'objList'=>$objList)));
         return $this->mf->ef_triple($subject,$properties);
