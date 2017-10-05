@@ -306,7 +306,7 @@ class A2E_Converter
                         $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][1]))))));
                         $sametermExpression = $this->mf->ef_sameterm($element1,$element2);
                         return $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($sametermExpression)))));
-                    //CONCAT function
+                    //concat function
                     case 'concat':
                         return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
                     case 'lang':
