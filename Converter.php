@@ -112,6 +112,12 @@ class A2E_Converter
                 case 'var':
                     $this->targetModel->addProjectionVar($this->mf->ef_var($result_var['value']));
                     break;
+                // Этот тип для функций в переменных проекции. Пока там просто делаем forceSparql
+                case 'funcSparql':
+                    $var = $this->mf->ef_var($result_var['value']);
+                    $var->setForceSparql($result_var['value']);
+                    $this->targetModel->addProjectionVar($var);
+                    break;
                 default:
                     throw new Exception("Unknown var type");
             }
