@@ -1,4 +1,5 @@
 <?php
+
 class A2E_Models_Factory
 {
     public $config = array(
@@ -22,7 +23,8 @@ class A2E_Models_Factory
         'ef_optional' => 'Erfurt_Sparql_Query2_OptionalGraphPattern',
         'ef_prefix' => 'Erfurt_Sparql_Query2_Prefix',
         'ef_lang' => 'Erfurt_Sparql_Query2_Lang',
-        'ef' => 'Erfurt_Sparql_Query2'
+        'ef' => 'Erfurt_Sparql_Query2',
+        'ef_regex' => 'Erfurt_Sparql_Query2_Regex',
     );
 
     function __construct($config = array())
@@ -30,19 +32,21 @@ class A2E_Models_Factory
         $this->setConfig($config);
     }
 
-    function __call($name, array $arguments){
-        return $this->create($name,$arguments);
-    }
-
     function setConfig($config)
     {
         foreach ($config as $model => $class) {
-            if (isset($config[$model]))
+            if (isset($config[$model])) {
                 $config[$model] = $class;
+            }
         }
     }
 
-    function create($model,$args)
+    function __call($name, array $arguments)
+    {
+        return $this->create($name, $arguments);
+    }
+
+    function create($model, $args)
     {
         if (isset($this->config[$model])) {
             $class = $this->config[$model];

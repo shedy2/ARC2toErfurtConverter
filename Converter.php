@@ -1,4 +1,5 @@
 <?php
+
 class A2E_Converter
 {
     /**
@@ -27,7 +28,8 @@ class A2E_Converter
      * </code>
      * @param array[string]string $factory_config
      */
-    function __construct($factory_config=array()){
+    function __construct($factory_config = array())
+    {
         $this->mf = new A2E_Models_Factory($factory_config);
         $this->parser = ARC2::getSPARQLParser();
         $this->targetModel = $this->mf->ef();
@@ -39,7 +41,8 @@ class A2E_Converter
      * @param string $query
      * @return Erfurt_Sparql_Query2
      */
-    public function convert($query){
+    public function convert($query)
+    {
         $this->parse($query);
         $this->convertPrefixes();
         $this->convertQueryType();
@@ -49,23 +52,31 @@ class A2E_Converter
     }
 
     /**
-     * @return ARC2_SPARQLParser
-     */
-    public function getParser(){
-        return $this->parser;
-    }
-
-    /**
      * Parse sparqle query
      *
      * @param string $query
      * @throws Exception
      */
-    function parse($query){
+    function parse($query)
+    {
         $this->parser->parse($query);
 
-        if(count($this->parser->getErrors())){
-            throw new Exception(implode(';',$this->parser->getErrors()));
+        if (count($this->parser->getErrors())) {
+            throw new Exception(implode(';', $this->parser->getErrors()));
+        }
+    }
+
+    /**
+     * set Erfurt_Sparql_Query2 model's prefixes
+     * @throws Exception
+     */
+    function convertPrefixes()
+    {
+
+        if (isset($this->parser->r['prefixes'])) {
+            foreach ($this->parser->r['prefixes'] as $name => $uri) {
+                $this->targetModel->addPrefix($this->mf->ef_prefix(str_replace(':', '', $name), $uri));
+            }
         }
     }
 
@@ -73,16 +84,19 @@ class A2E_Converter
      * set Erfurt_Sparql_Query2 model's query type (SELECT, etc)
      * @throws Exception
      */
-    function convertQueryType(){
+    function convertQueryType()
+    {
 
-        if(!isset($this->parser->r['query']['type']))
+        if (!isset($this->parser->r['query']['type'])) {
             throw new Exception('Unknown var type');
+        }
 
-        switch($this->parser->r['query']['type']) {
+        switch ($this->parser->r['query']['type']) {
             case 'select':
                 $this->targetModel->setQueryType('SELECT');
-                if(isset($this->parser->r['query']['distinct']) and $this->parser->r['query']['distinct']==1)
+                if (isset($this->parser->r['query']['distinct']) and $this->parser->r['query']['distinct'] == 1) {
                     $this->targetModel->setDistinct(true);
+                }
                 break;
             default:
                 throw new Exception('Unknown query type');
@@ -90,25 +104,14 @@ class A2E_Converter
     }
 
     /**
-     * set Erfurt_Sparql_Query2 model's FROM blocks
-     */
-    function convertFroms(){
-
-        if(isset($this->parser->r['query']['dataset'])) {
-            foreach ($this->parser->r['query']['dataset'] as $from) {
-                $this->targetModel->addFrom($from['graph'], $from['named']);
-            }
-        }
-    }
-
-    /**
      * set Erfurt_Sparql_Query2 model's vars
      * @throws Exception
      */
-    function convertResultVars(){
+    function convertResultVars()
+    {
 
-        foreach($this->parser->r['query']['result_vars'] as $result_var){
-            switch($result_var['type']){
+        foreach ($this->parser->r['query']['result_vars'] as $result_var) {
+            switch ($result_var['type']) {
                 case 'var':
                     $this->targetModel->addProjectionVar($this->mf->ef_var($result_var['value']));
                     break;
@@ -125,24 +128,12 @@ class A2E_Converter
     }
 
     /**
-     * set Erfurt_Sparql_Query2 model's prefixes
-     * @throws Exception
-     */
-    function convertPrefixes(){
-
-        if(isset($this->parser->r['prefixes'])) {
-            foreach ($this->parser->r['prefixes'] as $name => $uri) {
-                $this->targetModel->addPrefix($this->mf->ef_prefix(str_replace(':', '', $name), $uri));
-            }
-        }
-    }
-
-    /**
      * set Erfurt_Sparql_Query2 model's WHERE blocks
      */
-    function convertWhere(){
+    function convertWhere()
+    {
 
-        if(isset($this->parser->r['query']['pattern']['patterns']) and count($this->parser->r['query']['pattern']['patterns'])) {
+        if (isset($this->parser->r['query']['pattern']['patterns']) and count($this->parser->r['query']['pattern']['patterns'])) {
             $ggp = $this->mf->ef_groupgraph();
             $this->resolvePatterns($ggp, $this->parser->r['query']['pattern']['patterns']);
             $this->targetModel->setWhere($ggp);
@@ -156,17 +147,18 @@ class A2E_Converter
      * @param array $patterns
      * @throws Exception
      */
-    function resolvePatterns(&$ggp,$patterns){
-        
-        foreach($patterns as $subPattern){
-            
-            switch($subPattern['type']) {
+    function resolvePatterns(&$ggp, $patterns)
+    {
+
+        foreach ($patterns as $subPattern) {
+
+            switch ($subPattern['type']) {
                 case 'triples':
                     foreach ($subPattern['patterns'] as $pattern) {
                         $ggp->addElement($this->getTriple($pattern));
                     }
                     break;
-                    
+
                 case 'optional':
                     $sub_ggp = $this->mf->ef_groupgraph();
                     $this->resolvePatterns($sub_ggp, $subPattern['patterns']);
@@ -180,7 +172,7 @@ class A2E_Converter
                     $optional = $this->mf->ef_minus($sub_ggp);
                     $ggp->addElement($optional);
                     break;
-                    
+
                 case 'filter':
                     $envloppedExpression = $this->getConstraint($subPattern['constraint']);
                     $filter = $this->mf->ef_filter($this->mf->ef_bracketted($envloppedExpression));
@@ -188,7 +180,8 @@ class A2E_Converter
                     break;
 
                 case 'bind':
-                    $bind = $this->mf->ef_bind($this->getConstraint($subPattern['constraint']),$this->mf->ef_var($subPattern['var']));
+                    $bind = $this->mf->ef_bind($this->getConstraint($subPattern['constraint']),
+                        $this->mf->ef_var($subPattern['var']));
                     $ggp->addElement($bind);
                     break;
 
@@ -199,14 +192,31 @@ class A2E_Converter
     }
 
     /**
+     * get triple converted to Erfurt format
+     * @param array $triple
+     * @return Erfurt_Sparql_Query2_TriplesSameSubject
+     */
+    function getTriple($triple)
+    {
+        $subject = $this->getConvertedVar($triple['s'], $triple['s_type']);
+        $verb = $this->getConvertedVar($triple['p'], $triple['p_type']);
+        $object = $this->getConvertedVar($triple['o'], $triple['o_type'],
+            isset($triple['o_lang']) ? $triple['o_lang'] : false);
+        $objList = $this->mf->ef_objectlist(array($object));
+        $properties = $this->mf->ef_propertylist(array(array('verb' => $verb, 'objList' => $objList)));
+        return $this->mf->ef_triple($subject, $properties);
+    }
+
+    /**
      * Convert var to Erfurt format
      *
      * @param string $value
      * @param string $type
      * @throws Exception
      */
-    function getConvertedVar($value, $type, $lang = false) {
-        switch($type) {
+    function getConvertedVar($value, $type, $lang = false)
+    {
+        switch ($type) {
             case 'var':
                 return $this->mf->ef_var($value);
                 break;
@@ -219,74 +229,6 @@ class A2E_Converter
             default:
                 throw new Exception("Unknown triples part type");
         }
-    }
-
-    /**
-     * Convert argument to Erfurt format
-     *
-     * @param string $value
-     * @param string $type
-     * @return mixed
-     * @throws Exception
-     */
-    function getConvertedArgument($arg){
-
-        switch($arg["type"]) {
-            case 'var':
-                $value = $arg['value'];
-                break;
-            case 'literal':
-                $value = $arg['value'];
-                break;
-            case 'uri':
-                $value = $arg['uri'];
-                break;
-            case 'built_in_call':
-                return $this->getConstraint($arg);
-                break;
-            default:
-                throw new Exception("Unknown same term arg type");
-        }
-        return $this->getConvertedVar($value,$arg["type"]);
-    }
-
-    /**
-     * @param array $arguments
-     * @return array
-     */
-    function getConvertedArguments($arguments){
-        $converted = array();
-        foreach($arguments as $argument) {
-            $converted[] = $this->getConvertedArgument($argument);
-        }
-        return $converted;
-    }
-
-    /**
-     * get triple converted to Erfurt format
-     * @param array $triple
-     * @return Erfurt_Sparql_Query2_TriplesSameSubject
-     */
-    function getTriple($triple){
-        $subject = $this->getConvertedVar($triple['s'],$triple['s_type']);
-        $verb = $this->getConvertedVar($triple['p'],$triple['p_type']);
-        $object = $this->getConvertedVar($triple['o'],$triple['o_type'],isset($triple['o_lang']) ? $triple['o_lang'] : false);
-        $objList = $this->mf->ef_objectlist(array($object));
-        $properties = $this->mf->ef_propertylist(array(array('verb'=>$verb,'objList'=>$objList)));
-        return $this->mf->ef_triple($subject,$properties);
-    }
-
-    /**
-     * get filter expression envlopped in effurt format
-     * @param mixed $element
-     * @return Erfurt_Sparql_Query2_Expression
-     */
-    function getEnveloppedFilterElement($element){
-        $multiplicativeExpression = $this->mf->ef_multiplicative();
-        $multiplicativeExpression->addElement('*',$element);
-        $additiveExpression = $this->mf->ef_additive();
-        $additiveExpression->addElement('+',$multiplicativeExpression);
-        return $additiveExpression;
     }
 
     /**
@@ -310,15 +252,19 @@ class A2E_Converter
                     case 'sameterm':
                         $element1 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][0]))))));
                         $element2 = $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($this->getConvertedArgument($constraint['args'][1]))))));
-                        $sametermExpression = $this->mf->ef_sameterm($element1,$element2);
+                        $sametermExpression = $this->mf->ef_sameterm($element1, $element2);
                         return $this->mf->ef_or(array($this->mf->ef_and(array($this->getEnveloppedFilterElement($sametermExpression)))));
                     //concat function
                     case 'concat':
                         return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
                     case 'lang':
                         return $this->mf->ef_lang($this->getConvertedArguments($constraint['args'])[0]);
+                    case 'regex':
+                        Rdf_Literal('i');
+                        list ($el$this->getConvertedArguments($constraint['args']);
+                        return $this->mf->ef_regex();
                     default:
-                        throw new Exception("Unknown filter call type");
+                        throw new Exception("Unknown filter call type: " . $constraint['call']);
                 }
                 break;
             default:
@@ -334,12 +280,13 @@ class A2E_Converter
      * @return mixed
      * @throws Exception
      */
-    function getEnvloppedOrAndExpression($type,$patterns){
+    function getEnvloppedOrAndExpression($type, $patterns)
+    {
         switch ($type) {
             case 'or':
                 $patternEnvloppedToAnd = array();
 
-                foreach($patterns as $pattern){
+                foreach ($patterns as $pattern) {
                     $patternEnvloppedToAnd[] = $this->mf->ef_and(array($pattern));
                 }
                 return $this->mf->ef_or($patternEnvloppedToAnd);
@@ -349,6 +296,84 @@ class A2E_Converter
                 break;
             default:
                 throw new Exception("Unknown or/and expression type");
+        }
+    }
+
+    /**
+     * get filter expression envlopped in effurt format
+     * @param mixed $element
+     * @return Erfurt_Sparql_Query2_Expression
+     */
+    function getEnveloppedFilterElement($element)
+    {
+        $multiplicativeExpression = $this->mf->ef_multiplicative();
+        $multiplicativeExpression->addElement('*', $element);
+        $additiveExpression = $this->mf->ef_additive();
+        $additiveExpression->addElement('+', $multiplicativeExpression);
+        return $additiveExpression;
+    }
+
+    /**
+     * Convert argument to Erfurt format
+     *
+     * @param string $value
+     * @param string $type
+     * @return mixed
+     * @throws Exception
+     */
+    function getConvertedArgument($arg)
+    {
+
+        switch ($arg["type"]) {
+            case 'var':
+                $value = $arg['value'];
+                break;
+            case 'literal':
+                $value = $arg['value'];
+                break;
+            case 'uri':
+                $value = $arg['uri'];
+                break;
+            case 'built_in_call':
+                return $this->getConstraint($arg);
+                break;
+            default:
+                throw new Exception("Unknown same term arg type");
+        }
+        return $this->getConvertedVar($value, $arg["type"]);
+    }
+
+    /**
+     * @param array $arguments
+     * @return array
+     */
+    function getConvertedArguments($arguments)
+    {
+        $converted = array();
+        foreach ($arguments as $argument) {
+            $converted[] = $this->getConvertedArgument($argument);
+        }
+        return $converted;
+    }
+
+    /**
+     * @return ARC2_SPARQLParser
+     */
+    public function getParser()
+    {
+        return $this->parser;
+    }
+
+    /**
+     * set Erfurt_Sparql_Query2 model's FROM blocks
+     */
+    function convertFroms()
+    {
+
+        if (isset($this->parser->r['query']['dataset'])) {
+            foreach ($this->parser->r['query']['dataset'] as $from) {
+                $this->targetModel->addFrom($from['graph'], $from['named']);
+            }
         }
     }
 }
