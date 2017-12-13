@@ -259,10 +259,6 @@ class A2E_Converter
                         return $this->mf->ef_concat($this->getConvertedArguments($constraint['args']));
                     case 'lang':
                         return $this->mf->ef_lang($this->getConvertedArguments($constraint['args'])[0]);
-                    case 'regex':
-                        Rdf_Literal('i');
-                        list ($el$this->getConvertedArguments($constraint['args']);
-                        return $this->mf->ef_regex();
                     default:
                         throw new Exception("Unknown filter call type: " . $constraint['call']);
                 }
