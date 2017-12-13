@@ -174,8 +174,8 @@ class A2E_Converter
                     break;
 
                 case 'filter':
-                    $envloppedExpression = $this->getConstraint($subPattern['constraint']);
-                    $filter = $this->mf->ef_filter($this->mf->ef_bracketted($envloppedExpression));
+                    $enveloppedExpression = $this->getConstraint($subPattern['constraint']);
+                    $filter = $this->mf->ef_filter($this->mf->ef_bracketted($enveloppedExpression));
                     $ggp->addElement($filter);
                     break;
 
@@ -245,7 +245,7 @@ class A2E_Converter
                 foreach ($constraint['patterns'] as $pattern) {
                     $patterns[] = $this->getConstraint($pattern);
                 }
-                return $this->getEnvloppedOrAndExpression($constraint['sub_type'], $patterns);
+                return $this->getEnveloppedOrAndExpression($constraint['sub_type'], $patterns);
             case 'built_in_call':
                 switch ($constraint['call']) {
                     //sameTerm function
@@ -274,22 +274,22 @@ class A2E_Converter
     }
 
     /**
-     * get filter AND/OR expression envlopped in effurt format
+     * get filter AND/OR expression envelopped in effurt format
      * @param string $type
      * @param array $patterns
      * @return mixed
      * @throws Exception
      */
-    function getEnvloppedOrAndExpression($type, $patterns)
+    function getEnveloppedOrAndExpression($type, $patterns)
     {
         switch ($type) {
             case 'or':
-                $patternEnvloppedToAnd = array();
+                $patternEnveloppedToAnd = array();
 
                 foreach ($patterns as $pattern) {
-                    $patternEnvloppedToAnd[] = $this->mf->ef_and(array($pattern));
+                    $patternEnveloppedToAnd[] = $this->mf->ef_and(array($pattern));
                 }
-                return $this->mf->ef_or($patternEnvloppedToAnd);
+                return $this->mf->ef_or($patternEnveloppedToAnd);
                 break;
             case 'and':
                 return $this->mf->ef_or(array($this->mf->ef_and($patterns)));
@@ -300,7 +300,7 @@ class A2E_Converter
     }
 
     /**
-     * get filter expression envlopped in effurt format
+     * get filter expression envelopped in effurt format
      * @param mixed $element
      * @return Erfurt_Sparql_Query2_Expression
      */
