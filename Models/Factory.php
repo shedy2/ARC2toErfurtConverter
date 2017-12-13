@@ -1,6 +1,13 @@
 <?php
+
+/**
+ * Class A2E_Models_Factory
+ */
 class A2E_Models_Factory
 {
+    /**
+     * @var array
+     */
     public $config = array(
         'ef_bind' => 'A2E_Models_Bind',
         'ef_concat' => 'A2E_Models_Concat',
@@ -22,27 +29,49 @@ class A2E_Models_Factory
         'ef_optional' => 'Erfurt_Sparql_Query2_OptionalGraphPattern',
         'ef_prefix' => 'Erfurt_Sparql_Query2_Prefix',
         'ef_lang' => 'Erfurt_Sparql_Query2_Lang',
-        'ef' => 'Erfurt_Sparql_Query2'
+        'ef' => 'Erfurt_Sparql_Query2',
+        'ef_regex' => 'Erfurt_Sparql_Query2_Regex',
     );
 
-    function __construct($config = array())
+    /**
+     * A2E_Models_Factory constructor.
+     * @param array $config
+     */
+    public function __construct($config = array())
     {
         $this->setConfig($config);
     }
 
-    function __call($name, array $arguments){
-        return $this->create($name,$arguments);
-    }
-
-    function setConfig($config)
+    /**
+     * @param $config
+     */
+    public function setConfig($config)
     {
         foreach ($config as $model => $class) {
-            if (isset($config[$model]))
+            if (isset($config[$model])) {
                 $config[$model] = $class;
+            }
         }
     }
 
-    function create($model,$args)
+    /**
+     * @param $name
+     * @param array $arguments
+     * @return mixed
+     * @throws Exception
+     */
+    public function __call($name, array $arguments)
+    {
+        return $this->create($name, $arguments);
+    }
+
+    /**
+     * @param $model
+     * @param $args
+     * @return mixed
+     * @throws Exception
+     */
+    function create($model, $args)
     {
         if (isset($this->config[$model])) {
             $class = $this->config[$model];
@@ -51,7 +80,11 @@ class A2E_Models_Factory
         throw new Exception('Model does not exist');
     }
 
-    /*function ef_var($pattern){
+    /**
+     * @param $pattern
+     * @return mixed
+     */
+    /*public function ef_var($pattern){
         $class = $this->config[__FUNCTION__];
         return new $class($pattern);
     }*/
