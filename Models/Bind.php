@@ -1,8 +1,17 @@
 <?php
-
+/**
+ * Class A2E_Models_Bind
+ */
 class A2E_Models_Bind extends Erfurt_Sparql_Query2_GroupGraphPattern
 {
+    /**
+     * @var mixed
+     */
     protected $element;
+
+    /**
+     * @var Erfurt_Sparql_Query2_Var
+     */
     protected $var;
 
     /**

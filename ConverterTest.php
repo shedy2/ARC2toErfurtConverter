@@ -1,8 +1,14 @@
 <?php
 
+/**
+ * Class A2E_ConverterTest
+ */
 class A2E_ConverterTest
 {
-
+    /**
+     * @param $queries
+     * @throws Exception
+     */
     public static function test($queries)
     {
 
@@ -21,7 +27,12 @@ class A2E_ConverterTest
         }
     }
 
-    static function testQuery($query)
+    /**
+     * @param $query
+     * @return bool
+     * @throws Exception
+     */
+    public static function testQuery($query)
     {
 
         $converter = new A2E_Converter();
