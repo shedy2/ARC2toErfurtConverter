@@ -12,7 +12,7 @@ class A2E_Models_Factory
         'ef_bind' => 'A2E_Models_Bind',
         'ef_concat' => 'A2E_Models_Concat',
         'ef_minus' => 'A2E_Models_Minus',
-        'ef_var' => '\W\_Var',
+        'ef_var' => 'W_Var',
         'ef_and' => 'Erfurt_Sparql_Query2_ConditionalAndExpression',
         'ef_or' => 'Erfurt_Sparql_Query2_ConditionalOrExpression',
         'ef_sameterm' => 'Erfurt_Sparql_Query2_sameTerm',
