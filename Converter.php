@@ -38,8 +38,9 @@ class A2E_Converter
     /**
      * Convert sparqle query to Erfurt object
      *
-     * @param string $query
+     * @param $query
      * @return Erfurt_Sparql_Query2
+     * @throws Exception
      */
     public function convert($query)
     {
@@ -48,6 +49,7 @@ class A2E_Converter
         $this->convertQueryType();
         $this->convertResultVars();
         $this->convertWhere();
+        $this->convertOrder();
         return $this->targetModel;
     }
 
@@ -138,6 +140,24 @@ class A2E_Converter
             $this->resolvePatterns($ggp, $this->parser->r['query']['pattern']['patterns']);
             $this->targetModel->setWhere($ggp);
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    function convertOrder()
+    {
+        if (isset($this->parser->r['query']['order_infos']) && is_array($this->parser->r['query']['order_infos'])) {
+            foreach ($this->parser->r['query']['order_infos'] as $item) {
+                $this->targetModel->getOrder()->add(
+                    new Erfurt_Sparql_Query2_Var($item['value']),
+                    ($item['direction'] === 'asc'
+                        ? Erfurt_Sparql_Query2_OrderClause::ASC
+                        : Erfurt_Sparql_Query2_OrderClause::DESC)
+                );
+            }
+        }
+
     }
 
     /**
