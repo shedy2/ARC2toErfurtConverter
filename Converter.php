@@ -217,6 +217,8 @@ class A2E_Converter
     function getConvertedVar($value, $type, $lang = false)
     {
         switch ($type) {
+            case 'property-path':
+                return $this->mf->ef_property_path($value);
             case 'var':
                 return $this->mf->ef_var($value);
                 break;

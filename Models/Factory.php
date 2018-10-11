@@ -9,6 +9,7 @@ class A2E_Models_Factory
      * @var array
      */
     public $config = array(
+        'ef_property_path' => \W\Iri\PropertyPath::class,
         'ef_bind' => 'A2E_Models_Bind',
         'ef_concat' => 'A2E_Models_Concat',
         'ef_minus' => 'A2E_Models_Minus',
