@@ -1,7 +1,7 @@
 {
-  "name": "a2e/converter",
+  "name": "wikilect/converter",
   "type": "library",
-  "description": "Converter ARC2 parsers output to Erfurn format",
+  "description": "Converter ARC2 parsers output to Erfurt format",
   "keywords": [
     "rdf",
     "sparql"
