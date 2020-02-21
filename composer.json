@@ -6,7 +6,7 @@
     "rdf",
     "sparql"
   ],
-  "homepage": "https://github.com/almatyartem/ARC2toErfurtConverter",
+  "homepage": "https://github.com/shedy2/ARC2toErfurtConverter",
   "license": "W3C",
   "authors": [
     {
@@ -23,7 +23,7 @@
   ],
   "require": {
     "php": ">=5.3.0",
-    "shedy2/arc2": "dev-master",
+    "shedy2/arc2": "master",
     "aksw/erfurt": "*"
   },
   "require-dev": {
