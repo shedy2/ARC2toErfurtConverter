@@ -15,15 +15,9 @@
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "repositories": [
-    {
-      "url": "https://github.com/shedy2/arc2",
-      "type": "vcs"
-    }
-  ],
   "require": {
     "php": ">=5.3.0",
-    "shedy2/arc2": "master",
+    "wikilect/arc2": "dev-master",
     "aksw/erfurt": "*"
   },
   "require-dev": {
