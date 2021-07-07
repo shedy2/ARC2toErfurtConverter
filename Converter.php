@@ -48,6 +48,7 @@ class A2E_Converter
         $this->convertQueryType();
         $this->convertResultVars();
         $this->convertWhere();
+        $this->convertLimit();
         return $this->targetModel;
     }
 
@@ -373,6 +374,16 @@ class A2E_Converter
             foreach ($this->parser->r['query']['dataset'] as $from) {
                 $this->targetModel->addFrom($from['graph'], $from['named']);
             }
+        }
+    }
+
+    /**
+     * set limit if exist
+     */
+    function convertLimit()
+    {
+        if (isset($this->parser->r['query']['limit'])) {
+            $this->targetModel->setLimit((int)$this->parser->r['query']['limit']);
         }
     }
 }
